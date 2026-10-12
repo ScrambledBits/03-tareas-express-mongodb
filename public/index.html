@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lista de tareas</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 560px; margin: 2rem auto; padding: 0 1rem; }
+    form { display: flex; gap: .5rem; margin-bottom: 1rem; }
+    input[type=text] { flex: 1; padding: .5rem; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; align-items: center; gap: .5rem; padding: .4rem 0; border-bottom: 1px solid #eee; }
+    li span { flex: 1; }
+    li.hecha span { text-decoration: line-through; color: #888; }
+  </style>
+</head>
+<body>
+  <h1>Lista de tareas</h1>
+  <form id="formulario">
+    <input id="titulo" type="text" placeholder="¿Qué hay que hacer?" required>
+    <button>Agregar</button>
+  </form>
+  <ul id="lista"></ul>
+  <script>
+    const lista = document.getElementById('lista');
+
+    async function cargar() {
+      const tareas = await (await fetch('/api/tareas')).json();
+      lista.replaceChildren(...tareas.map(t => {
+        const li = document.createElement('li');
+        li.className = t.completada ? 'hecha' : '';
+        li.innerHTML = '<input type="checkbox"><span></span><button>Borrar</button>';
+        li.querySelector('span').textContent = t.titulo;
+        const check = li.querySelector('input');
+        check.checked = t.completada;
+        check.onchange = async () => {
+          await fetch(`/api/tareas/${t._id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ completada: check.checked })
+          });
+          cargar();
+        };
+        li.querySelector('button').onclick = async () => {
+          await fetch(`/api/tareas/${t._id}`, { method: 'DELETE' });
+          cargar();
+        };
+        return li;
+      }));
+    }
+
+    document.getElementById('formulario').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      const campo = document.getElementById('titulo');
+      await fetch('/api/tareas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titulo: campo.value })
+      });
+      campo.value = '';
+      cargar();
+    });
+
+    cargar();
+  </script>
+</body>
+</html>

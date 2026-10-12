@@ -1,0 +1,19 @@
+{
+  "name": "tareas-express-mongodb",
+  "version": "1.0.0",
+  "description": "API REST de tareas con Express y MongoDB (proyecto educativo)",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "5.3.0",
+    "mongodb": "7.7.0"
+  }
+}
